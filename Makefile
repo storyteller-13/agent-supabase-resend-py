@@ -1,4 +1,7 @@
-.PHONY: install export-requirements dev deploy env clean ping test-webhook
+.PHONY: install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod
+
+# Test deployed app: set DEPLOY_URL first, e.g. export DEPLOY_URL=https://your-app.vercel.app
+DEPLOY_URL ?= https://agent-supabase-resend-py.vercel.app
 
 POETRY := $(shell command -v poetry 2>/dev/null || command -v pipx 2>/dev/null | xargs -I {} echo "{} run poetry")
 
@@ -13,7 +16,14 @@ install:
 	$(POETRY) install
 
 export-requirements: install
-	$(POETRY) export -f requirements.txt --without-hashes -o requirements.txt
+	@$(POETRY) export -f requirements.txt --without-hashes -o requirements.txt 2>/dev/null || \
+	(.venv/bin/python -c "\
+import re; \
+s=open('pyproject.toml').read(); \
+m=re.search(r'\[project\].*?dependencies\s*=\s*\[(.*?)\]', s, re.DOTALL); \
+deps=re.findall(r'\"([^\"]+)\"', m.group(1)) if m else ['resend>=2.0.0']; \
+open('requirements.txt','w').write('\n'.join(deps)); \
+print('Wrote requirements.txt from pyproject.toml')" )
 
 env:
 	@test -f .env.example || { echo "RESEND_API_KEY=" > .env.example; echo "RESEND_TO_EMAILS=" >> .env.example; echo "Created .env.example"; }
@@ -43,10 +53,24 @@ clean:
 	rm -rf build dist *.egg-info .eggs
 
 ping:
-	@curl -s http://localhost:3000/api/webhook | python -m json.tool
+	@curl -s http://localhost:3000/api/webhook | python3 -m json.tool
 
 test-webhook:
 	@curl -s -X POST http://localhost:3000/api/webhook \
 		-H "Content-Type: application/json" \
 		-d '{"type":"INSERT","table":"orders","schema":"public","record":{"id":1,"email":"test@example.com"},"old_record":null}' \
-		| python -m json.tool
+		| python3 -m json.tool
+
+# Test production deployment (override DEPLOY_URL if your app has a different URL)
+ping-prod:
+	@echo "GET $(DEPLOY_URL)/"
+	@curl -s "$(DEPLOY_URL)/" | python3 -m json.tool
+	@echo "\nGET $(DEPLOY_URL)/api/webhook (health)"
+	@curl -s "$(DEPLOY_URL)/api/webhook" | python3 -m json.tool
+
+test-webhook-prod:
+	@echo "POST $(DEPLOY_URL)/api/webhook"
+	@curl -s -X POST "$(DEPLOY_URL)/api/webhook" \
+		-H "Content-Type: application/json" \
+		-d '{"type":"INSERT","table":"orders","schema":"public","record":{"id":1,"email":"test@example.com"},"old_record":null}' \
+		| python3 -m json.tool
