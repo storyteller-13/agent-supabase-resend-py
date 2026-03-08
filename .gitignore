@@ -28,7 +28,9 @@ api/local_env.txt
 .pytest_cache/
 .mypy_cache/
 .coverage
+coverage.xml
 htmlcov/
+.ruff_cache/
 
 # IDE
 .idea/
