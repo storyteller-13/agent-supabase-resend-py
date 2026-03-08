@@ -1,9 +1,22 @@
-.PHONY: install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod
+.PHONY: help install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod
 
-# Test deployed app: set DEPLOY_URL first, e.g. export DEPLOY_URL=https://your-app.vercel.app
+# Production URL for ping-prod / test-webhook-prod (override: DEPLOY_URL=https://your-app.vercel.app make ping-prod)
 DEPLOY_URL ?= https://agent-supabase-resend-py.vercel.app
 
 POETRY := $(shell command -v poetry 2>/dev/null || command -v pipx 2>/dev/null | xargs -I {} echo "{} run poetry")
+
+help:
+	@echo "Supabase → Resend email agent"
+	@echo ""
+	@echo "  make install          Install dependencies (Poetry)"
+	@echo "  make env             Create .env.local from .env.example"
+	@echo "  make dev             Run local dev server (requires Python 3.12+, uv in venv)"
+	@echo "  make deploy          Deploy to Vercel production"
+	@echo "  make ping            GET health check (local, dev server must be running)"
+	@echo "  make ping-prod       GET health check (production)"
+	@echo "  make test-webhook    POST sample payload (local)"
+	@echo "  make test-webhook-prod  POST sample payload (production, sends email if env set)"
+	@echo "  make clean           Remove .venv, cache, build artifacts"
 
 install:
 	@if [ -z "$(POETRY)" ]; then \
@@ -39,7 +52,7 @@ dev: install
 	if [ ! -x "$$VENV_BIN/uv" ]; then \
 		echo "uv not found in venv. Run: poetry install"; exit 1; \
 	fi; \
-	PATH="$$VENV_BIN:$$PATH" vercel dev
+	(set -a; [ -f .env.local ] && . ./.env.local; set +a; PATH="$$VENV_BIN:$$PATH" vercel dev)
 
 deploy: export-requirements
 	vercel --prod

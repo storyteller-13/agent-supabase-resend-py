@@ -6,9 +6,14 @@ Sends an email via Resend with a summary of the change.
 """
 import json
 import os
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 
+from dotenv import load_dotenv
 import resend
+
+# Load .env.local for local dev (Vercel injects env in production)
+load_dotenv(Path(__file__).resolve().parent.parent / ".env.local")
 
 
 def _read_body(handler: BaseHTTPRequestHandler) -> bytes:
