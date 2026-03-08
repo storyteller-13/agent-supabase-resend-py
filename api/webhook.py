@@ -4,13 +4,14 @@ Supabase Database Webhook → Resend Email Agent
 Triggered by Supabase database webhooks (INSERT/UPDATE/DELETE).
 Sends an email via Resend with a summary of the change.
 """
+
 import json
 import os
-from pathlib import Path
 from http.server import BaseHTTPRequestHandler
+from pathlib import Path
 
-from dotenv import load_dotenv
 import resend
+from dotenv import load_dotenv
 
 # Load env for local dev: api/local_env.txt (make dev copies .env.local there)
 _env_file = Path(__file__).resolve().parent / "local_env.txt"
@@ -106,7 +107,13 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             result = _send_email(payload)
-            self._respond(200, {"ok": True, "resend_id": getattr(result, "get", lambda k: None)("id") or str(result)})
+            self._respond(
+                200,
+                {
+                    "ok": True,
+                    "resend_id": getattr(result, "get", lambda k: None)("id") or str(result),
+                },
+            )
         except json.JSONDecodeError as e:
             self._respond(400, {"error": f"Invalid JSON: {e}"})
         except ValueError as e:

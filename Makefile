@@ -1,4 +1,4 @@
-.PHONY: help install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod
+.PHONY: help install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod test coverage coverage-report lint lint-fix format pre-commit
 
 # Production URL for ping-prod / test-webhook-prod (override: DEPLOY_URL=https://your-app.vercel.app make ping-prod)
 DEPLOY_URL ?= https://agent-supabase-resend-py.vercel.app
@@ -17,6 +17,13 @@ help:
 	@echo "  make test-webhook    POST sample payload (local)"
 	@echo "  make test-webhook-prod  POST sample payload (production, sends email if env set)"
 	@echo "  make clean           Remove .venv, cache, build artifacts"
+	@echo "  make test            Run pytest"
+	@echo "  make coverage        Run pytest with coverage report (terminal)"
+	@echo "  make coverage-report Run pytest with coverage and open html report"
+	@echo "  make lint            Run ruff check"
+	@echo "  make lint-fix        Run ruff check --fix"
+	@echo "  make format          Run ruff format"
+	@echo "  make pre-commit      Install pre-commit hooks and run"
 
 install:
 	@if [ -z "$(POETRY)" ]; then \
@@ -65,6 +72,29 @@ clean:
 	find . -type f -name '*.pyc' -delete 2>/dev/null || true
 	rm -rf .vercel
 	rm -rf build dist *.egg-info .eggs
+
+test: install
+	$(POETRY) run pytest
+
+coverage: install
+	$(POETRY) run pytest --cov=api --cov-report=term-missing
+
+coverage-report: install
+	$(POETRY) run pytest --cov=api --cov-report=term-missing --cov-report=html
+	@echo "Open htmlcov/index.html in a browser"
+
+lint: install
+	$(POETRY) run ruff check .
+
+lint-fix: install
+	$(POETRY) run ruff check . --fix
+
+format: install
+	$(POETRY) run ruff format .
+
+pre-commit: install
+	$(POETRY) run pre-commit install
+	$(POETRY) run pre-commit run --all-files
 
 ping:
 	@curl -s http://localhost:3000/api/webhook | python3 -m json.tool

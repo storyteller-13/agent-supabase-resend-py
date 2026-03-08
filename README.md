@@ -1,8 +1,12 @@
-# Supabase → Resend Email Agent
+# 👱🏿‍♂️ Bob, the Agent Who Gets Excited on `INSERT`
 
-A small agent that runs as a Vercel serverless function. When Supabase sends a **database webhook** (on row INSERT, UPDATE, or DELETE), this endpoint receives the payload and sends an email via **Resend** with a summary of the change.
+<br>
 
-**Requirements:** Python 3.12+, [Poetry](https://python-poetry.org/).
+> *A small agent that runs as a Vercel serverless function. When Supabase sends a **database webhook** (on row INSERT), this endpoint receives the payload and sends an email via **Resend** with a summary of the change.*
+
+<br>
+
+----
 
 ## Quick start
 
@@ -17,6 +21,11 @@ make ping-prod  # test production deployment
 ```
 
 Run `make help` for all targets.
+
+
+<br>
+
+---
 
 ## Setup
 
@@ -74,6 +83,10 @@ Supabase sends a JSON body like:
 
 The agent turns this into an email and sends it via Resend to `RESEND_TO_EMAILS`.
 
+<br>
+
+---
+
 ## Local development
 
 - **Python 3.12+** and **uv** (installed as a dev dependency) are required for `make dev`.
@@ -87,6 +100,10 @@ Then open http://localhost:3000 (root returns service info). Use `make ping` and
 
 `make dev` loads `.env.local` into the environment before starting Vercel. If you see **"RESEND_API_KEY is not set"**, check that `.env.local` exists, contains `RESEND_API_KEY=your_key` (no spaces around `=`), and restart the dev server.
 
+<br>
+
+---
+
 ## Testing the deployment
 
 Production URL is set in the Makefile as `DEPLOY_URL` (default: `https://agent-supabase-resend-py.vercel.app`).
@@ -98,21 +115,22 @@ make test-webhook-prod      # POST sample payload (sends email if Vercel env var
 
 Override the URL: `DEPLOY_URL=https://your-app.vercel.app make ping-prod`.
 
-## Makefile
+<br>
 
-| Target | Description |
-|--------|-------------|
-| `make help` | Show all targets (default) |
-| `make install` | Install dependencies (Poetry) |
-| `make env` | Copy `.env.example` → `.env.local` |
-| `make dev` | Run local dev server (`vercel dev`) |
-| `make deploy` | Export requirements and deploy to Vercel |
-| `make ping` | GET health check (local) |
-| `make ping-prod` | GET health check (production) |
-| `make test-webhook` | POST sample payload (local) |
-| `make test-webhook-prod` | POST sample payload (production) |
-| `make clean` | Remove `.venv`, `.vercel`, caches, build artifacts |
+---
 
+## Testing and linting
+
+- **Tests:** `make test` (pytest)
+- **Coverage:** `make coverage` (pytest with terminal report), `make coverage-report` (adds `htmlcov/` for browser)
+- **Lint:** `make lint` (ruff check), `make lint-fix` (auto-fix), `make format` (ruff format)
+- **Pre-commit:** Run `make pre-commit` once to install hooks; then `git commit` will run ruff (check + format) automatically. Pytest runs in CI only.
+
+CI runs on push/PR (see [.github/workflows/ci.yml](.github/workflows/ci.yml)): ruff check, ruff format --check, pytest with coverage.
+
+<br>
+
+---
 ## Endpoints
 
 | Method | Path | Description |
@@ -121,10 +139,3 @@ Override the URL: `DEPLOY_URL=https://your-app.vercel.app make ping-prod`.
 | GET | `/api` | Same as `/` |
 | GET | `/api/webhook` | Health check |
 | POST | `/api/webhook` | Supabase database webhook → sends email via Resend |
-
-## Project layout
-
-- `api/index.py` — Root handler (GET `/api`)
-- `api/webhook.py` — Webhook handler (GET/POST `/api/webhook`)
-- `vercel.json` — Rewrites and function config
-- `pyproject.toml` / `requirements.txt` — Dependencies (Poetry + PEP 621 for Vercel/uv)

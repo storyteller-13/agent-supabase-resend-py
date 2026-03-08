@@ -23,3 +23,33 @@ python-dotenv = ">=1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 uv = "*"
+pytest = "*"
+pytest-cov = "*"
+ruff = "*"
+pre-commit = "*"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v"
+
+[tool.coverage.run]
+source = ["api"]
+omit = ["*/tests/*", ".venv/*"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "def __repr__", "raise NotImplementedError"]
+show_missing = true
+fail_under = 0
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [".venv", ".vercel", "build"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501", "N801"]
+
+[tool.ruff.format]
+quote-style = "double"
