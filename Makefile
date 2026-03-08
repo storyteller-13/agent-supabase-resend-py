@@ -52,6 +52,7 @@ dev: install
 	if [ ! -x "$$VENV_BIN/uv" ]; then \
 		echo "uv not found in venv. Run: poetry install"; exit 1; \
 	fi; \
+	cp .env.local api/local_env.txt 2>/dev/null || true; \
 	(set -a; [ -f .env.local ] && . ./.env.local; set +a; PATH="$$VENV_BIN:$$PATH" vercel dev)
 
 deploy: export-requirements

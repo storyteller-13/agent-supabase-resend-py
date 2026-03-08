@@ -12,8 +12,12 @@ from http.server import BaseHTTPRequestHandler
 from dotenv import load_dotenv
 import resend
 
-# Load .env.local for local dev (Vercel injects env in production)
-load_dotenv(Path(__file__).resolve().parent.parent / ".env.local")
+# Load env for local dev: api/local_env.txt (make dev copies .env.local there)
+_env_file = Path(__file__).resolve().parent / "local_env.txt"
+if _env_file.exists():
+    load_dotenv(_env_file, override=True)
+else:
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env.local", override=True)
 
 
 def _read_body(handler: BaseHTTPRequestHandler) -> bytes:
