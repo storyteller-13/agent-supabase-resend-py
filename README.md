@@ -10,8 +10,10 @@
 
 ## Quick start
 
+Dependencies are managed with **[uv](https://docs.astral.sh/uv/)** (`uv.lock` + `pyproject.toml`). Install uv first if needed: `curl -LsSf https://astral.sh/uv/install.sh | sh` or `brew install uv`. To refresh locked versions: `uv lock --upgrade` then `uv sync`, commit `uv.lock`, and run `make export-requirements` before deploy so `requirements.txt` matches.
+
 ```bash
-make install    # install dependencies
+make install    # uv sync — install dependencies into .venv
 make env        # copy .env.example → .env.local (then edit with your keys)
 make dev        # run locally at http://localhost:3000
 make ping       # health check (with dev server running)
@@ -89,8 +91,9 @@ The agent turns this into an email and sends it via Resend to `RESEND_TO_EMAILS`
 
 ## Local development
 
-- **Python 3.12+** and **uv** (installed as a dev dependency) are required for `make dev`.
-- If you don’t have Python 3.12: `brew install python@3.12` then `poetry env use $(brew --prefix python@3.12)/bin/python3.12`.
+- **Python 3.12+**, **[uv](https://docs.astral.sh/uv/)**, and the **Vercel CLI** (`npm i -g vercel`) are required for `make dev`.
+- Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh` or `brew install uv`.
+- If you don’t have Python 3.12: `uv python install 3.12` (uv can fetch a matching interpreter).
 
 ```bash
 make dev
