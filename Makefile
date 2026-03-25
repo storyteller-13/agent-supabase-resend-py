@@ -3,14 +3,12 @@
 # Production URL for ping-prod / test-webhook-prod (override: DEPLOY_URL=https://your-app.vercel.app make ping-prod)
 DEPLOY_URL ?= https://agent-supabase-resend-py.vercel.app
 
-POETRY := $(shell command -v poetry 2>/dev/null || command -v pipx 2>/dev/null | xargs -I {} echo "{} run poetry")
-
 help:
 	@echo "Supabase → Resend email agent"
 	@echo ""
-	@echo "  make install          Install dependencies (Poetry)"
+	@echo "  make install          Install dependencies (uv)"
 	@echo "  make env             Create .env.local from .env.example"
-	@echo "  make dev             Run local dev server (requires Python 3.12+, uv in venv)"
+	@echo "  make dev             Run local dev server (Python 3.12+, Vercel CLI)"
 	@echo "  make deploy          Deploy to Vercel production"
 	@echo "  make ping            GET health check (local, dev server must be running)"
 	@echo "  make ping-prod       GET health check (production)"
@@ -26,24 +24,16 @@ help:
 	@echo "  make pre-commit      Install pre-commit hooks and run"
 
 install:
-	@if [ -z "$(POETRY)" ]; then \
-		echo "Poetry not found. Install it with:"; \
-		echo "  brew install poetry"; \
-		echo "  or: curl -sSL https://install.python-poetry.org | python3 -"; \
+	@command -v uv >/dev/null 2>&1 || { \
+		echo "uv not found. Install it with:"; \
+		echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"; \
+		echo "  or: brew install uv"; \
 		exit 1; \
-	fi
-	$(POETRY) config virtualenvs.in-project true
-	$(POETRY) install
+	}
+	uv sync
 
 export-requirements: install
-	@$(POETRY) export -f requirements.txt --without-hashes -o requirements.txt 2>/dev/null || \
-	(.venv/bin/python -c "\
-import re; \
-s=open('pyproject.toml').read(); \
-m=re.search(r'\[project\].*?dependencies\s*=\s*\[(.*?)\]', s, re.DOTALL); \
-deps=re.findall(r'\"([^\"]+)\"', m.group(1)) if m else ['resend>=2.0.0']; \
-open('requirements.txt','w').write('\n'.join(deps)); \
-print('Wrote requirements.txt from pyproject.toml')" )
+	uv export --no-dev -o requirements.txt --no-hashes
 
 env:
 	@test -f .env.example || { echo "RESEND_API_KEY=" > .env.example; echo "RESEND_TO_EMAILS=" >> .env.example; echo "Created .env.example"; }
@@ -54,10 +44,10 @@ dev: install
 	@VENV_PY="$(PWD)/.venv/bin/python"; \
 	VENV_BIN="$(PWD)/.venv/bin"; \
 	if [ ! -x "$$VENV_PY" ] || ! $$VENV_PY -c "import sys; exit(0 if sys.version_info >= (3, 12) else 1)" 2>/dev/null; then \
-		echo "Python 3.12+ required. Run: poetry env use python3.12 && poetry install"; exit 1; \
+		echo "Python 3.12+ required. Run: uv python install 3.12 && uv sync"; exit 1; \
 	fi; \
-	if [ ! -x "$$VENV_BIN/uv" ]; then \
-		echo "uv not found in venv. Run: poetry install"; exit 1; \
+	if ! command -v vercel >/dev/null 2>&1; then \
+		echo "Vercel CLI not found. Install: npm i -g vercel"; exit 1; \
 	fi; \
 	cp .env.local api/local_env.txt 2>/dev/null || true; \
 	(set -a; [ -f .env.local ] && . ./.env.local; set +a; PATH="$$VENV_BIN:$$PATH" vercel dev)
@@ -74,27 +64,27 @@ clean:
 	rm -rf build dist *.egg-info .eggs
 
 test: install
-	$(POETRY) run pytest
+	uv run pytest
 
 coverage: install
-	$(POETRY) run pytest --cov=api --cov-report=term-missing
+	uv run pytest --cov=api --cov-report=term-missing
 
 coverage-report: install
-	$(POETRY) run pytest --cov=api --cov-report=term-missing --cov-report=html
+	uv run pytest --cov=api --cov-report=term-missing --cov-report=html
 	@echo "Open htmlcov/index.html in a browser"
 
 lint: install
-	$(POETRY) run ruff check .
+	uv run ruff check .
 
 lint-fix: install
-	$(POETRY) run ruff check . --fix
+	uv run ruff check . --fix
 
 format: install
-	$(POETRY) run ruff format .
+	uv run ruff format .
 
 pre-commit: install
-	$(POETRY) run pre-commit install
-	$(POETRY) run pre-commit run --all-files
+	uv run pre-commit install
+	uv run pre-commit run --all-files
 
 ping:
 	@curl -s http://localhost:3000/api/webhook | python3 -m json.tool

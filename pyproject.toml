@@ -9,24 +9,16 @@ dependencies = [
     "python-dotenv>=1.0.0",
 ]
 
-[tool.poetry]
-name = "agent-supabase-resend"
-version = "0.1.0"
-description = "Supabase → Resend email webhook agent"
-readme = "README.md"
-package-mode = false
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.8.0",
+    "pre-commit>=4.0.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-resend = ">=2.0.0"
-python-dotenv = ">=1.0.0"
-
-[tool.poetry.group.dev.dependencies]
-uv = "*"
-pytest = "*"
-pytest-cov = "*"
-ruff = "*"
-pre-commit = "*"
+[tool.uv]
+default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

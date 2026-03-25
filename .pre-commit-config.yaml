@@ -1,9 +1,9 @@
 # See https://pre-commit.com for usage
-# Install: make pre-commit  (or: poetry run pre-commit install)
+# Install: make pre-commit  (or: uv run pre-commit install)
 # Run on commit: ruff check --fix + ruff format. Tests run in CI.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
+    rev: v0.15.7
     hooks:
       - id: ruff
         args: [--fix]

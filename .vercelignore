@@ -1,2 +1,2 @@
-# Ignore Poetry lock so Vercel uses pyproject.toml + uv (with correct requires-python)
-poetry.lock
+# Lockfile not needed on Vercel; Python deps come from requirements.txt (see make export-requirements)
+uv.lock
