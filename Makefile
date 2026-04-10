@@ -1,11 +1,16 @@
-.PHONY: help install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod test coverage coverage-report lint lint-fix format pre-commit
+.PHONY: help skill install export-requirements dev deploy env clean ping ping-prod test-webhook test-webhook-prod test coverage coverage-report lint lint-fix format pre-commit
 
 # Production URL for ping-prod / test-webhook-prod (override: DEPLOY_URL=https://your-app.vercel.app make ping-prod)
 DEPLOY_URL ?= https://agent-supabase-resend-py.vercel.app
 
+skill:
+	@test -f SKILL.md || { echo "SKILL.md not found"; exit 1; }
+	@cat SKILL.md
+
 help:
 	@echo "Supabase → Resend email agent"
 	@echo ""
+	@echo "  make skill           Show SKILL.md (project context for tools / contributors)"
 	@echo "  make install          Install dependencies (uv)"
 	@echo "  make env             Create .env.local from .env.example"
 	@echo "  make dev             Run local dev server (Python 3.12+, Vercel CLI)"

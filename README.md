@@ -4,6 +4,8 @@
 
 > *A small agent that runs as a Vercel serverless function. When Supabase sends a **database webhook** (on row INSERT), this endpoint receives the payload and sends an email via **Resend** with a summary of the change.*
 
+Compact project context for tools and contributors: [SKILL.md](SKILL.md) (also `make skill`).
+
 <br>
 
 ----
